@@ -40,6 +40,8 @@ def main():
     wallets = []
     addresses = []
     while True:
+        generated = 0
+        founded_with_balance = 0
         for i in range(50):
             wallets.append(generate_address())
             addresses.append(wallets[i]["address"])
@@ -48,10 +50,14 @@ def main():
             balance = address['final_balance']
             if balance:
                 print(balance)
+                founded_with_balance += 1
                 with open("addresses.txt", "a") as file:
                     file.write(str(wallets[i]) + "\n")
+        generated += 50
+        print(f"generated {generated} wallets, {founded_with_balance} with balance")
 
 
 if __name__ == '__main__':
     proxies.get_proxy_list()
+    print("Start to mining wallets")
     main()
