@@ -39,8 +39,8 @@ def generate_address():
 def main():
     wallets = []
     addresses = []
+    generated = 0
     while True:
-        generated = 0
         founded_with_balance = 0
         for i in range(50):
             wallets.append(generate_address())
