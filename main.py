@@ -4,11 +4,21 @@ import hashlib
 import binascii
 import requests
 
+import proxy as proxies
+import random
 
-def check_balance(address):
+
+def check_balances(address):
+    status = 0
     addresses = "|".join(address)
-    response = requests.get(f"https://blockchain.info/multiaddr?active={addresses}").json()
-    return response["addresses"]
+    response = None
+    while status != 200:
+        proxy = random.choice(proxies.proxy_list)
+        temp = {"http": proxy}
+        response = requests.get(f"https://blockchain.info/multiaddr?active={addresses}", proxies=temp)
+        if response.status_code == 200:
+            status = 200
+    return response.json()["addresses"]
 
 
 def generate_address():
@@ -29,17 +39,19 @@ def generate_address():
 def main():
     wallets = []
     addresses = []
-    for i in range(10):
-        wallets.append(generate_address())
-        addresses.append(wallets[i]["address"])
-    balances = check_balance(addresses)
-    for i, address in enumerate(balances):
-        balance = address['final_balance']
-        print(balance)
-        if balance:
-            with open("addresses.txt", "a") as file:
-                file.write(str(wallets[i]) + "\n")
+    while True:
+        for i in range(50):
+            wallets.append(generate_address())
+            addresses.append(wallets[i]["address"])
+        balances = check_balances(addresses)
+        for i, address in enumerate(balances):
+            balance = address['final_balance']
+            if balance:
+                print(balance)
+                with open("addresses.txt", "a") as file:
+                    file.write(str(wallets[i]) + "\n")
 
 
 if __name__ == '__main__':
+    proxies.get_proxy_list()
     main()
