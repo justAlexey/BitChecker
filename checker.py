@@ -5,25 +5,23 @@ import queue
 import time
 import random
 
+
 class Checker:
     def __init__(self):
         self.threads_generate_wallets = None
         self.threads_check_balances = None
-        self.wallets = queue.Queue(maxsize=1000)
+        self.wallets = queue.Queue(maxsize=10000)
         self.results = queue.Queue()
         self.work = 1
 
     def generate_wallets(self):
-        print("Start worker generate_wallets")
         while self.work:
             try:
                 self.wallets.put(wallet.Wallet().get_wallet(), timeout=10)
-            except:
+            except queue.Full as e:
                 pass
-        print("Stop worker generate_wallets")
 
     def check_balances(self):
-        print("Start worker check_balances")
         while self.work and not self.wallets.empty():
             try:
                 wallets = {}
@@ -39,23 +37,23 @@ class Checker:
                 time.sleep(random.randint(10, 15))
             except Exception as e:
                 print(f"Error worker {e}")
-        print("Stop worker check_balances")
 
     def start_work(self):
         self.threads_generate_wallets = [threading.Thread(target=self.generate_wallets) for _ in range(10)]
-        self.threads_check_balances = [threading.Thread(target=self.check_balances) for _ in range(10)]
-
+        self.threads_check_balances = [threading.Thread(target=self.check_balances) for _ in range(50)]
+        print("Start workers to generate")
         for thread in self.threads_generate_wallets:
             thread.start()
-
+        print("Start workers to check balance")
         for thread in self.threads_check_balances:
             thread.start()
 
     def stop_work(self):
         self.work = 0
+        print("Stop workers to generate")
         for thread in self.threads_generate_wallets:
             thread.join()
-
+        print("Stop workers to check balance")
         for thread in self.threads_check_balances:
             thread.join()
 
