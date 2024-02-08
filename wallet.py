@@ -27,7 +27,11 @@ class Wallet:
         self._address_binary = base58.b58encode(r + checksum)
         return self._address_binary.decode()
 
+    def get_wallet(self):
+        return {self.address: {"private_key": self.private_key, "balance": 0}}
+
 
 if __name__ == "__main__":
     wallet = Wallet()
-    print(f"Generated wallet\nAddress: {wallet.address}\nPublic key: {wallet.public_key}\nPrivate key: {wallet.private_key}\n")
+    print(
+        f"Generated wallet\nAddress: {wallet.address}\nPublic key: {wallet.public_key}\nPrivate key: {wallet.private_key}\n")

@@ -16,24 +16,41 @@ def make_dir():
         os.makedirs(path)
 
 
+def print_to_file_or_command_line(address, balance, private_key):
+    message = f"{address} : {balance / 1e8} BTC : {private_key}"
+
+    if balance:
+        print(f"{COLORS.GREEN}[+] " + message + f"{COLORS.RESET}", flush=True)
+        with open("results/wallets.txt", "a") as f:
+            f.write(f"{message}\n")
+    else:
+        print(f"{COLORS.RED}[-] " + message + f"{COLORS.RESET}", flush=True)
+        with open("results/empty.txt", "a") as f:
+            f.write(f"{message}\n")
+
+
 def main():
-    for _ in range(1):
-        check = checker.Checker()
-        for address in check.get_address_list():
-            if check.get_balance_by_address(address):
-                message = f"{COLORS.GREEN}[+] {address} : {float(check.get_balance_by_address(address)) / 1e8} BTC : {check.get_private_by_address(address)}"
-                print(message, flush=True)
-                with open("results/wallets.txt", "a") as f:
-                    f.write(
-                        f"{address} : {float(check.get_balance_by_address(address)) / 1e8} BTC : {check.get_private_by_address(address)}\n"
-                    )
+    counter = -1
+    work = 1
+    check = checker.Checker()
+    check.start_work()
+    while work:
+        try:
+            wall = check.results.get()
+            address = list(wall)[0]
+            balance = wall[address]["balance"]
+            private_key = wall[address]["private_key"]
+            print_to_file_or_command_line(address, balance, private_key)
+            if counter == 0:
+                work = 0
             else:
-                message = f"{COLORS.RED}[-] {address} : {float(check.get_balance_by_address(address)) / 1e8} BTC : {check.get_private_by_address(address)}"
-                print(message, flush=True)
-                with open("results/empty.txt", "a") as f:
-                    f.write(
-                        f"{address} : {float(check.get_balance_by_address(address)) / 1e8} BTC : {check.get_private_by_address(address)}\n"
-                    )
+                if counter > 0:
+                    counter -= 1
+                else:
+                    counter = -1
+        except:
+            work = 0
+    check.stop_work()
 
 
 if __name__ == '__main__':

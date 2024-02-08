@@ -1,51 +1,64 @@
 import requests
 import wallet
-
+import threading
+import queue
 import time
-
+import random
 
 class Checker:
     def __init__(self):
-        self.wallets = {}
-        self.balances = {}
-        self._generate_wallets()
-        self._check_balances()
+        self.threads_generate_wallets = None
+        self.threads_check_balances = None
+        self.wallets = queue.Queue(maxsize=1000)
+        self.results = queue.Queue()
+        self.work = 1
 
-    def _generate_wallets(self):
-        for i in range(100):
-            wall = wallet.Wallet()
-            self.wallets[wall.address] = wall.private_key
+    def generate_wallets(self):
+        print("Start worker generate_wallets")
+        while self.work:
+            try:
+                self.wallets.put(wallet.Wallet().get_wallet(), timeout=10)
+            except:
+                pass
+        print("Stop worker generate_wallets")
 
-    def _check_balances(self):
-        addresses = "|".join(self.wallets.keys())
-        url = f"https://blockchain.info/balance?active={addresses}"
+    def check_balances(self):
+        print("Start worker check_balances")
+        while self.work and not self.wallets.empty():
+            try:
+                wallets = {}
+                for _ in range(100):
+                    wall = self.wallets.get()
+                    wallets[list(wall)[0]] = wall[list(wall)[0]]["private_key"]
+                addresses = "|".join(list(wallets))
+                url = f"https://blockchain.info/balance?active={addresses}"
+                response = requests.get(url).json()
+                for address in list(response):
+                    result = {address: {"private_key": wallets[address], "balance": response[address]["final_balance"]}}
+                    self.results.put(result)
+                time.sleep(random.randint(10, 15))
+            except Exception as e:
+                print(f"Error worker {e}")
+        print("Stop worker check_balances")
 
-        response = requests.get(url, timeout=20).json()
-        for address in response.keys():
-            self.balances[address] = response[address]["final_balance"]
+    def start_work(self):
+        self.threads_generate_wallets = [threading.Thread(target=self.generate_wallets) for _ in range(10)]
+        self.threads_check_balances = [threading.Thread(target=self.check_balances) for _ in range(10)]
 
-    def get_address_list(self):
-        return self.wallets.keys()
+        for thread in self.threads_generate_wallets:
+            thread.start()
 
-    def get_total_balance(self):
-        total_balance = 0
-        for address in self.wallets:
-            total_balance += self.balances[address]
-        return total_balance
+        for thread in self.threads_check_balances:
+            thread.start()
 
-    def get_private_by_address(self, address):
-        return self.wallets[address]
+    def stop_work(self):
+        self.work = 0
+        for thread in self.threads_generate_wallets:
+            thread.join()
 
-    def get_balance_by_address(self, address):
-        return self.balances[address]
+        for thread in self.threads_check_balances:
+            thread.join()
 
 
 if __name__ == "__main__":
-    start = time.monotonic()
     checker = Checker()
-    stop = time.monotonic()
-    print(f"time = {stop-start}")
-    start = time.monotonic()
-    checker._check_balances()
-    stop = time.monotonic()
-    print(f"time = {stop - start}")
