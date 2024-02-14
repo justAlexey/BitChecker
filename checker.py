@@ -40,7 +40,7 @@ class Checker:
 
     def start_work(self):
         self.threads_generate_wallets = [threading.Thread(target=self.generate_wallets) for _ in range(10)]
-        self.threads_check_balances = [threading.Thread(target=self.check_balances) for _ in range(50)]
+        self.threads_check_balances = [threading.Thread(target=self.check_balances) for _ in range(1)]
         print("Start workers to generate")
         for thread in self.threads_generate_wallets:
             thread.start()

@@ -24,9 +24,16 @@ def print_to_file_or_command_line(address, balance, private_key):
         with open("results/wallets.txt", "a") as f:
             f.write(f"{message}\n")
     else:
-        print(f"{COLORS.RED}[-] " + message + f"{COLORS.RESET}", flush=True)
-        with open("results/empty.txt", "a") as f:
-            f.write(f"{message}\n")
+        try:
+            with open("results/empty.txt", "r") as f:
+                temp = int(f.readline())
+        except:
+            temp = 0
+        temp += 1
+        with open("results/empty.txt", "w") as f:
+            f.write(f"{temp}\n")
+
+        print(f"{COLORS.RED} -{temp}-[-] " + message + f"{COLORS.RESET}", flush=True)
 
 
 def main():
@@ -48,7 +55,8 @@ def main():
                     counter -= 1
                 else:
                     counter = -1
-        except:
+        except Exception as e:
+            print(e)
             work = 0
     check.stop_work()
 
