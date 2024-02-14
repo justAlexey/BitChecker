@@ -55,8 +55,7 @@ def main():
                     counter -= 1
                 else:
                     counter = -1
-        except Exception as e:
-            print(e)
+        except:
             work = 0
     check.stop_work()
 
