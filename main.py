@@ -35,7 +35,7 @@ def print_to_file_or_command_line(address, balance, private_key):
         with open("results/empty.txt", "w") as f:
             f.write(f"{temp}\n")
 
-        print(f"{COLORS.RED} -{temp}-[-] " + message + f"{COLORS.RESET}", flush=True)
+        #print(f"{COLORS.RED} -{temp}-[-] " + message + f"{COLORS.RESET}", flush=True)
 
 
 def main():
