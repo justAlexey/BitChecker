@@ -27,7 +27,9 @@ def print_to_file_or_command_line(address, balance, private_key):
         try:
             with open("results/empty.txt", "r") as f:
                 temp = int(f.readline())
-        except:
+        except FileNotFoundError:
+            temp = 0
+        except ValueError:
             temp = 0
         temp += 1
         with open("results/empty.txt", "w") as f:
