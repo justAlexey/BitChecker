@@ -3,6 +3,16 @@ import hashlib
 
 import base58
 import ecdsa
+import random
+
+
+temp = random.randint(2**32, 2**256)
+
+
+def _get_random(x):
+    global temp
+    temp += 1
+    return temp.to_bytes(32)
 
 
 class Wallet:
@@ -12,7 +22,7 @@ class Wallet:
         self.address = self._generate_address()
 
     def _generate_private_key(self):
-        self._private_key_binary = ecdsa.SigningKey.generate(curve=ecdsa.SECP256k1)
+        self._private_key_binary = ecdsa.SigningKey.generate(curve=ecdsa.SECP256k1, entropy=_get_random)
         return binascii.b2a_hex(self._private_key_binary.to_string()).decode()
 
     def _generate_public_key(self):
